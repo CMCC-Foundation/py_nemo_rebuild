@@ -45,7 +45,7 @@ conda create -n mpipy -c conda-forge python=3 numpy netcdf4=*=mpi_mpich* mpi4py
 conda activate mpipy
 ```
 
-It is necessary to pin the netCDF4 python module in order to avoid isseus during later updates:
+It is necessary to pin the netCDF4 python module in order to avoid issues during later updates:
 
 ```
 echo 'netcdf4 *mpich*' >> ${CONDA_PREFIX}/conda-meta/pinned
