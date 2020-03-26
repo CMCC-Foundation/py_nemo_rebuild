@@ -45,6 +45,9 @@ conda create -n mpipy -c conda-forge python=3 numpy netcdf4=*=mpi_mpich* mpi4py
 conda activate mpipy
 ```
 
+BEWARE: when updating the environment conda keeps trying to switch to the OpenMPI-based packages.
+Please avoid to update the environment for now, a fix is under research.
+
 ### Run the script in parallel
 
 This script should be invoked as:
