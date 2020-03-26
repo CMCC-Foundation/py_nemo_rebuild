@@ -45,8 +45,11 @@ conda create -n mpipy -c conda-forge python=3 numpy netcdf4=*=mpi_mpich* mpi4py
 conda activate mpipy
 ```
 
-BEWARE: when updating the environment conda keeps trying to switch to the OpenMPI-based packages.
-Please avoid to update the environment for now, a fix is under research.
+It is necessary to pin the netCDF4 python module in order to avoid isseus during later updates:
+
+```
+echo 'netcdf4 *mpich*' >> ${CONDA_PREFIX}/conda-meta/pinned
+```
 
 ### Run the script in parallel
 
