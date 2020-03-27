@@ -12,55 +12,22 @@ While the script can be run sequentially (i.e. single task), it is designed
 to run in parallel (SPMD) leveraging the MPI library, in order to speed up
 the reconstruction.
 
-### Prerequisites
+### Setup Anaconda environment
 
-* MPI library & run-time environment (mpirun, etc...) [optional]
-* NetCDF4/HDF5 libraries [parallel version optional]
-* Python
-* numpy
-* netCDF4
-* mpi4py [optional]
-
-### Setup an anaconda environment
-
-The rebuild script can be run sequentially:
-
+The working environment can be setup using the provided anaconda3 `environment.yml` file:
 ```
-python nemo_rebuild.py <options> <files>
+conda env create -f environment.yml
+
+conda activate nemo_rebuild
 ```
 
-In order to take advantage of the parallelization, an MPI enabled environment
-is required:
-
-* mpi4py python module
-* parallel NetCDF4/HDF5 libraries
-* netCDF4 python module
-* MPI run time environment (mpirun, etc...)
-
-The simplest way to set up such an environment is through Anaconda:
-
-```
-conda create -n mpipy -c conda-forge python=3 numpy netcdf4=*=mpi_mpich* mpi4py
-
-conda activate mpipy
-```
-
-It is necessary to pin the netCDF4 python module in order to avoid issues during later updates:
+In order to avoid issues during later updates, It is necessary to pin the netCDF4 python module in the anaconda environment :
 
 ```
 echo 'netcdf4 *mpich*' >> ${CONDA_PREFIX}/conda-meta/pinned
 ```
 
-### Run the script in parallel
-
-This script should be invoked as:
-
-```
-mpirun -n N python -m mpy4py nemo_rebuild.py ...
-```
-where N is the number of MPI tasks required.
-
-### Command line options
+### Usage of nemo_rebuild
 
 ```
 python nemo_rebuild.py -h
@@ -87,13 +54,31 @@ optional arguments:
 Rebuild NEMO/XIOS multiple output/restart files in a single file
 ```
 
-IN_FILE can be one of:
+**IN_FILE** can be one of:
  * Full name of a subdomain file, e.g. filebase_0000.nc
  * Base name of a subdomain file, e.g. filebase
+
+Examples
+--------
+
+#### The rebuild script can be run either sequentially or using MPI parallelization as described below.
+
+We want to rebuild a set of nemo restart files from ORCA1 configuration. The minimal command line to perform a simple **sequential** reconstruction is
+```
+python nemo_rebuild.py -i ORCA1_01305240_restart
+```
+and the script will automatically detect the number of subdomain files.
+
+Let's rebuild nemo output files from ORCA025 configuration by using the **MPI**  interface to speed up things ... 
+```
+mpirun -n N python -m mpi4py nemo_rebuild.py -i ORCA025_1m_20000101_20000131_grid_T
+```
+where N is the number of MPI tasks required.
+
 
 Authors
 -------
 
-* Pier Giuseppe Fogli ()
+* Pier Giuseppe Fogli 
 
 
