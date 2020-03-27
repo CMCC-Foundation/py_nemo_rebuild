@@ -46,13 +46,13 @@ def nemo_rebuild(in_file=None,
     verbose  : (bool) Verbose mode (default False)
     """
     #
-    # This script should be invoked as: mpirun -n N python -m mpy4py nemo_rebuild.py ...
+    # This script should be invoked as: mpirun -n N python -m mpi4py nemo_rebuild.py ...
     # in order to avoid possible MPI deadlocks.
     # Load the mpi4py module if not provided on the command line (-m mpi4py)
     have_mpi4py = True
     if 'mpi4py' not in sys.modules.keys():
         print(
-            'This script should be invoked as: mpirun -n N python -m mpy4py nemo_rebuild.py ...'
+            'This script should be invoked as: mpirun -n N python -m mpi4py nemo_rebuild.py ...'
         )
         print(
             '-m mpi4py not provided on the command line. Loading the mpi4py module...'
@@ -184,7 +184,7 @@ def nemo_rebuild(in_file=None,
     orig = gattrs.pop('history', None)
     history = dt.datetime.strftime(dt.datetime.now(), '%c')
     if (have_mpi4py):
-        history = history + ': mpirun -n {0:d} python -m mpy4py '.format(
+        history = history + ': mpirun -n {0:d} python -m mpi4py '.format(
             size) + ' '.join(sys.argv[:])
     else:
         history = history + ': python ' + ' '.join(sys.argv[:])

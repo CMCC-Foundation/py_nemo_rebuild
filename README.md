@@ -27,7 +27,7 @@ In order to avoid issues during later updates, It is necessary to pin the netCDF
 echo 'netcdf4 *mpich*' >> ${CONDA_PREFIX}/conda-meta/pinned
 ```
 
-### Usage of nemo_rebuild
+### Usage of nemo_rebuild.py
 
 ```
 python nemo_rebuild.py -h
