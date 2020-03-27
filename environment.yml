@@ -1,0 +1,11 @@
+---
+name: nemo_rebuild
+channels:
+  - conda-forge
+
+dependencies:
+  # Multi language support:
+  - python>=3.6
+  - numpy 
+  - netcdf4=*=mpi_mpich* 
+  - mpi4py
