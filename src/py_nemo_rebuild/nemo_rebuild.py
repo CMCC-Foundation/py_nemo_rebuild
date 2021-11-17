@@ -408,7 +408,10 @@ def nemo_rebuild(in_file=None,
     del oncid
 
 
-if __name__ == "__main__":
+def rebuild():
+    """
+    Entry point function for command line executable and main function.
+    """
     import argparse
     #
     parser = argparse.ArgumentParser(
@@ -480,4 +483,5 @@ if __name__ == "__main__":
                  fill=args.fill,
                  verbose=args.verbose)
 
-
+if __name__ == "__main__":
+    rebuild()

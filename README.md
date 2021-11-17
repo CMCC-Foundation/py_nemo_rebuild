@@ -75,6 +75,14 @@ mpirun -n N python -m mpi4py nemo_rebuild.py -i ORCA025_1m_20000101_20000131_gri
 ```
 where N is the number of MPI tasks required.
 
+Install package
+---------------
+
+When installed as package, an executable names nemo_rebuild_py will be added to your path, so you can call it from wherever which executees the main python function of the script. The package can be installed by launching
+```
+pip install .
+```
+from the root folder of the repository.
 
 Authors
 -------
