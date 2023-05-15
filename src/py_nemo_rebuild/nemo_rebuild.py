@@ -1,27 +1,37 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+
+have_mpi4py = True
+try:
+    from mpi4py import MPI
+except:
+    print('Unable to load the mpi4py module. Executing sequentially.')
+    have_mpi4py = False
+
 import sys
 import os
 import re
 import datetime as dt
 import numpy as np
-from netCDF4 import Dataset
+import netCDF4 as nc
 
 ####################################################################
 
 # SemVer version
 _major_version = 0
-_minor_version = 3
+_minor_version = 4
 _patch = 0
-_release = "beta"
 
-_version = '{0:d}.{1:d}.{2:d}-{3:s}'.format(_major_version, _minor_version,
-                                            _patch, _release)
-_date = '25-03-2020'
+#_release = 'beta'
+_release = ''
 
+_date = '15-05-2023'
 
-#
+_version = '{0:d}.{1:d}.{2:d}'.format(_major_version, _minor_version, _patch)
+if (len(_release)>0):
+    _version = _version+'-'+_release
+
 def nemo_rebuild(in_file=None,
                  out_file=None,
                  numdom=None,
@@ -46,32 +56,18 @@ def nemo_rebuild(in_file=None,
     verbose  : (bool) Verbose mode (default False)
     """
     #
-    # This script should be invoked as: mpirun -n N python -m mpi4py nemo_rebuild.py ...
-    # in order to avoid possible MPI deadlocks.
-    # Load the mpi4py module if not provided on the command line (-m mpi4py)
-    have_mpi4py = True
-    if 'mpi4py' not in sys.modules.keys():
-        print(
-            'This script should be invoked as: mpirun -n N python -m mpi4py nemo_rebuild.py ...'
-        )
-        print(
-            '-m mpi4py not provided on the command line. Loading the mpi4py module...'
-        )
-        try:
-            import mpi4py
-        except:
-            print('Unable to load the mpi4py module. Executing sequentially.')
-            have_mpi4py = False
+    # This script should be invoked as: mpirun -n N python nemo_rebuild.py ...
     #
     # MPI related initialization
     rank = 0
     size = 1
+    comm = 0
+    info = 0
     if (have_mpi4py):
-        mpi4py = sys.modules['mpi4py']
-        MPI = mpi4py.MPI
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()
         size = comm.Get_size()
+        info = MPI.INFO_NULL
     #
     master = (rank == 0)
     parallel = (size > 1)
@@ -128,6 +124,10 @@ def nemo_rebuild(in_file=None,
     # Output file name (path)
     if out_file is None:
         out_file = in_file + '.nc'
+    else:
+        mtch = re.search('\.nc', out_file)
+        if (not mtch):
+            out_file = out_file + '.nc'
     #
     if (verbose):
         print('Output file name: ', out_file, flush=True)
@@ -141,7 +141,7 @@ def nemo_rebuild(in_file=None,
     #
     # open input first file
     in_file0 = in_file + '_' + '{0:0{width}d}'.format(rank, width=pnd) + '.nc'
-    incid = Dataset(in_file0, 'r')
+    incid = nc.Dataset(in_file0, 'r')
     #
     # Get number of domains from global attributes
     if (numdom != incid.DOMAIN_number_total):
@@ -162,9 +162,14 @@ def nemo_rebuild(in_file=None,
         gnx -= 2
         gny -= 1
     #
-    # Create output file
-    oncid = Dataset(out_file, 'w', format='NETCDF4_CLASSIC', parallel=parallel)
+    if (verbose):
+        print(rank, 'gnx x gny= ', gnx, gny, flush=True)
     #
+    # Create output file
+    oncid = nc.Dataset(out_file, mode='w', format='NETCDF4_CLASSIC', parallel=parallel, comm=comm, info=info)
+    #
+    if (verbose):
+        print(rank, 'oncid ', oncid, flush=True)
     # Copy/update global attributes, except excluded ones
     gattrs = {
         k: v
@@ -184,7 +189,7 @@ def nemo_rebuild(in_file=None,
     orig = gattrs.pop('history', None)
     history = dt.datetime.strftime(dt.datetime.now(), '%c')
     if (have_mpi4py):
-        history = history + ': mpirun -n {0:d} python -m mpi4py '.format(
+        history = history + ': mpirun -n {0:d} python '.format(
             size) + ' '.join(sys.argv[:])
     else:
         history = history + ': python ' + ' '.join(sys.argv[:])
@@ -255,10 +260,10 @@ def nemo_rebuild(in_file=None,
     del vattrs
     del var
     #
-    del in_file0
-    #
     # Close files
     incid.close()
+    #
+    del in_file0
     #
     if (numdom == None):
         oncid.close()
@@ -285,7 +290,7 @@ def nemo_rebuild(in_file=None,
                   lin_file,
                   '\n',
                   flush=True)
-        incid = Dataset(lin_file, 'r')
+        incid = nc.Dataset(lin_file, 'r')
         #
         # NetCDF IDs of the dimensions to be rebuilt
         gdimids = incid.DOMAIN_dimensions_ids
@@ -419,59 +424,60 @@ def rebuild():
         description='NEMO output/restart file rebuilder',
         epilog=
         'Rebuild NEMO/XIOS multiple output/restart files in a single file')
-    parser.add_argument("-i",
-                        "--input",
-                        action="store",
-                        dest="in_file",
+    parser.add_argument('-i',
+                        '--input',
+                        action='store',
+                        dest='in_file',
                         default=None,
                         required=True,
-                        help="input file name")
-    parser.add_argument("-o",
-                        "--output",
-                        action="store",
-                        dest="out_file",
+                        help='input file name')
+    parser.add_argument('-o',
+                        '--output',
+                        action='store',
+                        dest='out_file',
                         default=None,
                         required=False,
-                        help="output file name")
-    parser.add_argument("-n",
-                        "--numdom",
-                        action="store",
-                        dest="numdom",
+                        help='output file name')
+    parser.add_argument('-n',
+                        '--numdom',
+                        action='store',
+                        dest='numdom',
                         default=None,
                         type=int,
                         required=False,
-                        help="Number of domains (input files)")
+                        help='Number of domains (input files)')
     parser.add_argument(
-        "-f",
-        "--fill",
-        action="store",
-        dest="fill",
+        '-f',
+        '--fill',
+        action='store',
+        dest='fill',
         default=0,
         required=False,
         help=
-        "Fill missing domains with %(dest)s if no _FillValue is present (default 0)"
+        'Fill missing domains with %(dest)s if no _FillValue is present (default 0)'
     )
-    parser.add_argument("-v",
-                        "--variable",
-                        action="store",
-                        dest="variables",
+    parser.add_argument('-v',
+                        '--variable',
+                        action='store',
+                        dest='variables',
                         default=None,
                         required=False,
-                        help="Variable(s) to rebuild")
+                        help='Variable(s) to rebuild')
     parser.add_argument(
-        "-r",
-        "--remove_halo",
-        action="store_true",
-        dest="nohalo",
+        '-r',
+        '--remove_halo',
+        action='store_true',
+        dest='nohalo',
         default=False,
         required=False,
-        help="Remove global domain halo (rebuilt restart file won't work)")
-    parser.add_argument("--verbose",
-                        action="store_true",
-                        dest="verbose",
+        help='Remove global domain halo (rebuilt restart file won\'t work)')
+    parser.add_argument('--verbose',
+                        action='store_true',
+                        dest='verbose',
                         default=False,
                         required=False,
-                        help="Verbose mode")
+                        help='Verbose mode')
+    parser.add_argument('-V', '--version', action='version', version=sys.argv[0]+': Version '+_version+' '+_date)
     #
     args = parser.parse_args()
     #
@@ -483,5 +489,7 @@ def rebuild():
                  fill=args.fill,
                  verbose=args.verbose)
 
+
 if __name__ == "__main__":
     rebuild()
+

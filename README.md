@@ -27,11 +27,11 @@ In order to avoid issues during later updates, It is necessary to pin the netCDF
 echo 'netcdf4 *mpich*' >> ${CONDA_PREFIX}/conda-meta/pinned
 ```
 
-### Usage of nemo_rebuild.py
+### Usage of nemo\_rebuild.py
 
 ```
 python nemo_rebuild.py -h
-usage: mpirun -n N python -m mpi4py nemo_rebuild.py [-h] -i IN_FILE [-o OUT_FILE]
+usage: mpirun -n N python nemo_rebuild.py [-h] -i IN_FILE [-o OUT_FILE]
                                                     [-n NUMDOM] [-f FILL] [-v VARIABLES]
                                                     [-r] [--verbose]
 
@@ -54,8 +54,8 @@ optional arguments:
 Rebuild NEMO/XIOS multiple output/restart files in a single file
 ```
 
-**IN_FILE** can be one of:
- * Full name of a subdomain file, e.g. filebase_0000.nc
+**IN\_FILE** can be one of:
+ * Full name of a subdomain file, e.g. filebase\_0000.nc
  * Base name of a subdomain file, e.g. filebase
 
 Examples
@@ -71,7 +71,7 @@ and the script will automatically detect the number of subdomain files.
 
 Let's rebuild nemo output files from ORCA025 configuration by using the **MPI**  interface to speed up things ... 
 ```
-mpirun -n N python -m mpi4py nemo_rebuild.py -i ORCA025_1m_20000101_20000131_grid_T
+mpirun -n N python nemo_rebuild.py -i ORCA025_1m_20000101_20000131_grid_T
 ```
 where N is the number of MPI tasks required.
 
@@ -88,5 +88,6 @@ Authors
 -------
 
 * Pier Giuseppe Fogli 
-
+* Tomas Lovato
+* Momme Butensch#&X00F6;n
 
