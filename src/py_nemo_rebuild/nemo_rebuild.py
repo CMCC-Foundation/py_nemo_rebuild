@@ -13,7 +13,6 @@ import sys
 import os
 import re
 import datetime as dt
-import numpy as np
 import netCDF4 as nc
 
 ####################################################################
@@ -177,9 +176,12 @@ def nemo_rebuild(in_file=None,
     }
     #
     if (nohalo):
-        orig = gattrs['DOMAIN_size_global']
-        gattrs['original_DOMAIN_size_global'] = orig
-        gattrs['DOMAIN_size_global'] = np.array([gnx, gny], dtype=orig.dtype)
+        orig = gattrs['DOMAIN_size_global'].copy()
+        gattrs['original_DOMAIN_size_global'] = gattrs['DOMAIN_size_global']
+        orig[0]=gnx
+        orig[1]=gny
+        gattrs['DOMAIN_size_global'] = orig
+        del orig
         orig = gattrs.pop('comment', None)
         if (orig == None):
             gattrs['comment'] = 'Global domain halo removed'
