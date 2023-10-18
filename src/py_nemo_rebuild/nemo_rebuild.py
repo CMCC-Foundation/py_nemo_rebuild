@@ -20,12 +20,12 @@ import netCDF4 as nc
 # SemVer version
 _major_version = 0
 _minor_version = 4
-_patch = 0
+_patch = 1
 
 #_release = 'beta'
 _release = ''
 
-_date = '15-05-2023'
+_date = '18-10-2023'
 
 _version = '{0:d}.{1:d}.{2:d}'.format(_major_version, _minor_version, _patch)
 if (len(_release)>0):
