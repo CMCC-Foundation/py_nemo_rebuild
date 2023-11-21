@@ -93,9 +93,6 @@ def nemo_rebuild(in_file=None,
             print('NUMDOM=1, nothing to be done. Exiting.')
             return
     #
-    if parallel and (numdom < size):
-        raise ValueError('NUMDOM {:d} < number of MPI tasks {:d}!'.format(numdom, size))
-    #
     # TODO: Rebuild of a subset of variables needs more logic to identify
     # and handle auxiliary variables (coordinates, bounds, scalars, etc...)
     if (variables != None):
@@ -162,6 +159,9 @@ def nemo_rebuild(in_file=None,
     #
     if (numdom == None):
         raise RuntimeError('NUMDOM=None.')
+    #
+    if parallel and (numdom < size):
+        raise ValueError('NUMDOM {:d} < number of MPI tasks {:d}!'.format(numdom, size))
     #
     itertot = numdom // size
     # Handle the case where (numdom%size)!=0
