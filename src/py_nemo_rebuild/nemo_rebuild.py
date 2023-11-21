@@ -37,6 +37,7 @@ def nemo_rebuild(in_file=None,
                  variables=None,
                  nohalo=False,
                  fill=0,
+                 classic=False,
                  verbose=False):
     """
     Rebuild NEMO/XIOS multiple output/restart files in a single file.
@@ -52,6 +53,7 @@ def nemo_rebuild(in_file=None,
                e.g. variables='thetao,so,zos'
     nohalo   : (bool) Remove global domain halo (rebuilt restart file won't work) (default False)
     fill     : (numeric) Fill missing domains with this value if no _FillValue is present (default 0)
+    classic  : (bool) use NetCDF4 Classic format (default: False)
     verbose  : (bool) Verbose mode (default False)
     """
     #
@@ -90,6 +92,9 @@ def nemo_rebuild(in_file=None,
         elif (numdom == 1):
             print('NUMDOM=1, nothing to be done. Exiting.')
             return
+    #
+    if parallel and (numdom < size):
+        raise ValueError('NUMDOM {:d} < number of MPI tasks {:d}!'.format(numdom, size))
     #
     # TODO: Rebuild of a subset of variables needs more logic to identify
     # and handle auxiliary variables (coordinates, bounds, scalars, etc...)
@@ -183,7 +188,10 @@ def nemo_rebuild(in_file=None,
     ####################################################################
     #
     # Create output file
-    oncid = nc.Dataset(out_file, mode='w', format='NETCDF4_CLASSIC', parallel=parallel, comm=comm, info=info)
+    ncfmt='NETCDF4'
+    if classic:
+        ncfmt+='_CLASSIC'
+    oncid = nc.Dataset(out_file, mode='w', format=ncfmt, parallel=parallel, comm=comm, info=info)
     #
     if (verbose):
         print(rank, 'oncid ', oncid, flush=True)
@@ -502,6 +510,13 @@ def rebuild():
                         default=False,
                         required=False,
                         help='Remove global domain halo (rebuilt restart file won\'t work)')
+    parser.add_argument('-c',
+                        '--classic',
+                        action='store_true',
+                        dest='classic',
+                        default=False,
+                        required=False,
+                        help='use NetCDF4 Classic format (default: False)')
     parser.add_argument('--verbose',
                         action='store_true',
                         dest='verbose',
@@ -518,6 +533,7 @@ def rebuild():
                  variables=args.variables,
                  nohalo=args.nohalo,
                  fill=args.fill,
+                 classic=args.classic,
                  verbose=args.verbose)
 
 ########################################################################
