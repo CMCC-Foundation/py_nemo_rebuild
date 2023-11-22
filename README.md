@@ -31,13 +31,12 @@ echo 'netcdf4 *mpich*' >> ${CONDA_PREFIX}/conda-meta/pinned
 
 ```
 python nemo_rebuild.py -h
-usage: mpirun -n N python nemo_rebuild.py [-h] -i IN_FILE [-o OUT_FILE]
-                                                    [-n NUMDOM] [-f FILL] [-v VARIABLES]
-                                                    [-r] [--verbose]
+usage: mpirun -n N python nemo_rebuild.py [-h] -i IN_FILE [-o OUT_FILE] [-n NUMDOM] [-f FILL] [-v VARIABLES] [-r] [-c]
+                                          [--verbose] [-V]
 
 NEMO output/restart file rebuilder
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -i IN_FILE, --input IN_FILE
                         input file name
@@ -49,7 +48,9 @@ optional arguments:
   -v VARIABLES, --variable VARIABLES
                         Variable(s) to rebuild
   -r, --remove_halo     Remove global domain halo (rebuilt restart file won't work)
+  -c, --classic         use NetCDF4 Classic format (default: False)
   --verbose             Verbose mode
+  -V, --version         show program's version number and exit
 
 Rebuild NEMO/XIOS multiple output/restart files in a single file
 ```
@@ -61,24 +62,29 @@ Rebuild NEMO/XIOS multiple output/restart files in a single file
 Examples
 --------
 
-#### The rebuild script can be run either sequentially or using MPI parallelization as described below.
+The rebuild script can be run either sequentially or using MPI parallelization as described below.
 
-We want to rebuild a set of nemo restart files from ORCA1 configuration. The minimal command line to perform a simple **sequential** reconstruction is
+### Sequential run
+
+We want to rebuild a set of NEMO restart files from ORCA1 configuration. The minimal command line to perform a simple **sequential** reconstruction is
 ```
 python nemo_rebuild.py -i ORCA1_01305240_restart
 ```
 and the script will automatically detect the number of subdomain files.
 
-Let's rebuild nemo output files from ORCA025 configuration by using the **MPI**  interface to speed up things ... 
+### Parallel run
+
+Let's rebuild NEMO output files from ORCA025 configuration by using the **MPI** interface to speed up things ... 
 ```
 mpirun -n N python nemo_rebuild.py -i ORCA025_1m_20000101_20000131_grid_T
 ```
 where N is the number of MPI tasks required.
+The number N of MPI tasks cannot exceed the number of subdomains and does not necessarily have to be an integer divisor of the number of subdomains.
 
-Install package
----------------
+Install as a package
+--------------------
 
-When installed as package, an executable names nemo\_rebuild\_py will be added to your path, so you can call it from wherever which executees the main python function of the script. The package can be installed by launching
+When installed as a package, an executable named nemo\_rebuild\_py will be added to your path, so one can call it from anywhere. The package can be installed by launching:
 ```
 pip install .
 ```

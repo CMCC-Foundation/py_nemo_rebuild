@@ -402,8 +402,8 @@ def nemo_rebuild(in_file=None,
                 if (verbose):
                     print('\n', rank, niter, name, var, flush=True)
                 #
-                # Set collective I/O mode
                 ovid = oncid.variables[name]
+                # Set collective I/O mode
                 if (parallel):
                     ovid.set_collective(True)
                 #
@@ -417,16 +417,16 @@ def nemo_rebuild(in_file=None,
                             ovid[:, gj1:gj2, gi1:gi2] = var[:, lj1:lj2, li1:li2]
                         else:  # Coordinate bounds
                             ovid[gj1:gj2, gi1:gi2, :] = var[lj1:lj2, li1:li2, :]
-                    elif (var.ndim == 4):
-                        ovid[:, :, gj1:gj2, gi1:gi2] = var[:, :, lj1:lj2, li1:li2]
+                    elif (var.ndim > 3):
+                        ovid[..., gj1:gj2, gi1:gi2] = var[..., lj1:lj2, li1:li2]
                     #
                     # Variables NOT to be rebuilt
                 elif (niter == 0):
-                    ovid = oncid.variables[name]
                     ovid[:] = var[:]
+                #
+                del ovid
             #
             incid.close()
-            del ovid
             del incid
     #
     ####################################################################
