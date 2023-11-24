@@ -2,16 +2,30 @@
 
 from __future__ import print_function
 
-have_mpi4py = True
-try:
-    from mpi4py import MPI
-except:
-    print('Unable to load the mpi4py module. Executing sequentially.')
-    have_mpi4py = False
-
 import sys
 import os
 import re
+
+have_mpi4py = True
+try:
+    # Try to load the mpi4py module
+    from mpi4py import MPI
+except:
+    # No mpi4py module found, check for active MPI env
+    lsize=1
+    for ev in ['PMI_SIZE', 'OMPI_COMM_WORLD_SIZE', 'MV2_COMM_WORLD_SIZE', 'WORLD_SIZE']:
+        if (ev in os.environ):
+            lsize=int(os.environ[ev])
+            break
+    #
+    if (lsize>1):
+        raise ModuleNotFoundError('No mpi4py python module found but MPI environment detected!\n'+
+                'Running with {:d} processes but no mpi4py python module found!\n'.format(lsize)+
+                'Check your environment! Exiting...')
+    else:
+        print('WARNING: Unable to load the mpi4py python module. Executing sequentially!')
+        have_mpi4py = False
+
 import datetime as dt
 import netCDF4 as nc
 
@@ -22,14 +36,16 @@ _major_version = 0
 _minor_version = 5
 _patch = 0
 
-_release = 'alpha'
-#_release = ''
+#_release = 'beta'
+_release = ''
 
-_date = '21-11-2023'
+_date = '24-11-2023'
 
-_version = '{0:d}.{1:d}.{2:d}'.format(_major_version, _minor_version, _patch)
+_version = '{:d}.{:d}'.format(_major_version, _minor_version)
+if (_patch>0):
+    _version += '.{:d}'.format(_patch)
 if (len(_release)>0):
-    _version = _version+'-'+_release
+    _version += '-'+_release
 
 def nemo_rebuild(in_file=None,
                  out_file=None,
@@ -96,7 +112,7 @@ def nemo_rebuild(in_file=None,
     # TODO: Rebuild of a subset of variables needs more logic to identify
     # and handle auxiliary variables (coordinates, bounds, scalars, etc...)
     if (variables != None):
-        raise RuntimeError('Rebuild of a subset of variables not implemented yet!')
+        raise NotImplementedError('Rebuild of a subset of variables not implemented yet!')
     #
     ####################################################################
     #
@@ -119,7 +135,7 @@ def nemo_rebuild(in_file=None,
             if os.path.isfile(test_file):
                 break
         if (pnd == 0):
-            raise RuntimeError('No input file found! Check in_file argument.')
+            raise FileNotFoundError('No input file found! Check in_file argument.')
         del test_file
     #
     del mtch
@@ -158,7 +174,7 @@ def nemo_rebuild(in_file=None,
         numdom = incid.DOMAIN_number_total
     #
     if (numdom == None):
-        raise RuntimeError('NUMDOM=None.')
+        raise ValueError('NUMDOM=None.')
     #
     if parallel and (numdom < size):
         raise ValueError('NUMDOM {:d} < number of MPI tasks {:d}!'.format(numdom, size))
