@@ -7,4 +7,5 @@ dependencies:
   # Multi language support:
   - python>=3.6
   - netcdf4=*=mpi_mpich* 
+  - mpich=*=*external*
   - mpi4py

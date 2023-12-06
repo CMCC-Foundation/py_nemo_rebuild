@@ -21,13 +21,23 @@ conda env create -f environment.yml
 conda activate nemo_rebuild
 ```
 
-In order to avoid issues during later updates, It is necessary to pin the netCDF4 python module in the anaconda environment :
+In order to avoid issues during later updates, it is necessary to pin the netCDF4 and MPICH python modules in the anaconda environment :
 
 ```
-echo 'netcdf4 *mpich*' >> ${CONDA_PREFIX}/conda-meta/pinned
+echo 'netcdf4 * *mpich*' >> ${CONDA_PREFIX}/conda-meta/pinned
+echo 'mpich * *external*' >> ${CONDA_PREFIX}/conda-meta/pinned
 ```
+
+The choice of the external build of the MPICH package enable the use of the MPI library installed on the HPC platform (Intel MPI, etc...), provided that the environment is properly set up (e.g. module load impi-2021.6.0/2021.6.0).
 
 ### Usage of nemo\_rebuild.py
+
+First of all the correct environment needs to be set up with:
+```
+module load impi-2021.6.0/2021.6.0     # or whatever MPI library is available on the HPC platoform
+conda activate nemo_rebuild
+```
+Once the environment is properly set up the script nemo_rebuild.py can be run:
 
 ```
 python nemo_rebuild.py -h
@@ -71,6 +81,7 @@ We want to rebuild a set of NEMO restart files from ORCA1 configuration. The min
 python nemo_rebuild.py -i ORCA1_01305240_restart
 ```
 and the script will automatically detect the number of subdomain files.
+In this case it's not mandatory to set up the MPI environment (module load ...).
 
 ### Parallel run
 
@@ -84,7 +95,7 @@ The number N of MPI tasks cannot exceed the number of subdomains and does not ne
 Install as a package
 --------------------
 
-When installed as a package, an executable named nemo\_rebuild\_py will be added to your path, so one can call it from anywhere. The package can be installed by launching:
+When installed as a package, an executable named nemo\_rebuild\_py will be added to your path, so one can call it from anywhere, provided that the conda and MPI environments are properly set up. The package can be installed by launching:
 ```
 pip install .
 ```
