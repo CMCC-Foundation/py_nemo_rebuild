@@ -20,15 +20,16 @@ conda env create -f environment.yml
 
 conda activate nemo_rebuild
 ```
+> [!IMPORTANT]
+> In order to avoid issues during later updates, it is necessary to pin the netCDF4 and MPICH python modules in the anaconda environment :
+> 
+> ```
+> echo 'netcdf4 * *mpich*' >> ${CONDA_PREFIX}/conda-meta/pinned
+> echo 'mpich * *external*' >> ${CONDA_PREFIX}/conda-meta/pinned
+> ```
 
-In order to avoid issues during later updates, it is necessary to pin the netCDF4 and MPICH python modules in the anaconda environment :
-
-```
-echo 'netcdf4 * *mpich*' >> ${CONDA_PREFIX}/conda-meta/pinned
-echo 'mpich * *external*' >> ${CONDA_PREFIX}/conda-meta/pinned
-```
-
-The choice of the external build of the MPICH package enable the use of the MPI library installed on the HPC platform (Intel MPI, etc...), provided that the environment is properly set up (e.g. module load impi-2021.6.0/2021.6.0).
+> [!IMPORTANT]
+> The choice of the external build of the MPICH package enable the use of the MPI library installed on the HPC platform (Intel MPI, etc...), provided that the environment is properly set up (e.g. module load impi-2021.6.0/2021.6.0).
 
 ### Usage of nemo\_rebuild.py
 
@@ -104,7 +105,7 @@ from the root folder of the repository.
 Authors
 -------
 
-* Pier Giuseppe Fogli 
-* Tomas Lovato
-* Momme Butensch&#246;n
+* [Pier Giuseppe Fogli](https://github.com/pgf) 
+* [Tomas Lovato](https://github.com/tomaslovato)
+* [Momme Butensch&#246;n](https://github.com/mommebutenschoen)
 
