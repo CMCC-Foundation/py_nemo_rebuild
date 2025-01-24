@@ -33,13 +33,13 @@ import netCDF4 as nc
 
 # SemVer version
 _major_version = 0
-_minor_version = 5
+_minor_version = 6
 _patch = 0
 
 #_release = 'beta'
 _release = ''
 
-_date = '24-11-2023'
+_date = '24-01-2025'
 
 _version = '{:d}.{:d}'.format(_major_version, _minor_version)
 if (_patch>0):
@@ -254,24 +254,25 @@ def nemo_rebuild(in_file=None,
     ####################################################################
     #
     # Define dimensions & get global dims to be rebuilt
-    gdimids = incid.DOMAIN_dimensions_ids
+    gdimszs = incid.DOMAIN_size_global
+    ldimszs = incid.DOMAIN_size_local
     gdims = ['', '']
-    for name, dim in incid.dimensions.items():
+    for dim in incid.dimensions.values():
         if (verbose):
             print(dim)
-        if ((dim._dimid + 1) == gdimids[0]):
-            oncid.createDimension(name, gnx)
-            gdims[0] = name
-        elif ((dim._dimid + 1) == gdimids[1]):
-            oncid.createDimension(name, gny)
-            gdims[1] = name
+        if dim.isunlimited():
+            oncid.createDimension(dim.name, None)
+        elif (dim.size in ldimszs):
+            idx = 0 if ldimszs[0]==dim.size else 1
+            oncid.createDimension(dim.name, gdimszs[idx])
+            gdims[idx] = dim.name
         else:
-            oncid.createDimension(name, len(dim) if not dim.isunlimited() else None)
+            oncid.createDimension(dim.name, dim.size)
     #
     if (verbose):
         print('Global dimensions to be rebuilt: ', gdims)
     del dim
-    del gdimids
+    del gdimszs, ldimszs
     #
     ####################################################################
     #
