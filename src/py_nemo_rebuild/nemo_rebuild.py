@@ -49,7 +49,7 @@ if (len(_release)>0):
 
 def nemo_rebuild(in_file=None,
                  out_file=None,
-                 numdom=None,
+                 numdom=0,
                  variables=None,
                  nohalo=False,
                  fill=0,
@@ -64,7 +64,8 @@ def nemo_rebuild(in_file=None,
                 - Full name of a domain file, e.g. filebase_0000.nc
                 - Base name of a domain file, e.g. filebase
     out_file : (string) rebuilt output file name. Default: filebase.nc
-    numdom   : (integer) number of domains. Default: DOMAIN_number_total global attribute.
+    numdom   : (integer) number of domains. Default: 0 => Use DOMAIN_number_total global attribute.
+               The command line value takes precedence over the global attribute!
     variables: (string) rebuild only selected variables (comma separated list),
                e.g. variables='thetao,so,zos'
     nohalo   : (bool) Remove global domain halo (rebuilt restart file won't work) (default False)
@@ -102,7 +103,7 @@ def nemo_rebuild(in_file=None,
         raise ValueError('Missing input file.')
     #
     # Check domains number
-    if (numdom != None):
+    if (numdom != 0):
         if (numdom < 0):
             raise ValueError('NUMDOM < 0 !')
         elif (numdom == 1):
@@ -168,13 +169,13 @@ def nemo_rebuild(in_file=None,
     incid = nc.Dataset(in_file0, 'r')
     #
     # Get number of domains from global attributes
-    if (numdom != incid.DOMAIN_number_total):
-        if (numdom != None):
-            print('WARNING: NUMDOM overwritten with DOMAIN_number_total global attribute!', flush=True)
+    if (numdom == 0):
         numdom = incid.DOMAIN_number_total
-    #
-    if (numdom == None):
-        raise ValueError('NUMDOM=None.')
+        print('WARNING: NUMDOM=0, overwritten with DOMAIN_number_total global attribute!', flush=True)
+        print('         DOMAIN_number_total = {:d}'.format(numdom), flush=True)
+    elif (numdom != incid.DOMAIN_number_total):
+        print('WARNING: DOMAIN_number_total global attribute differs from NUMDOM!', flush=True)
+        print('         Command line value NUMDOM (={:d}) takes precedence!'.format(numdom), flush=True)
     #
     if parallel and (numdom < size):
         raise ValueError('NUMDOM {:d} < number of MPI tasks {:d}!'.format(numdom, size))
@@ -499,10 +500,10 @@ def rebuild():
                         '--numdom',
                         action='store',
                         dest='numdom',
-                        default=None,
+                        default=0,
                         type=int,
                         required=False,
-                        help='Number of domains (input files)')
+                        help='Number of domains (i.e. input files, takes precedence over global attributes)')
     parser.add_argument(
                         '-f',
                         '--fill',
