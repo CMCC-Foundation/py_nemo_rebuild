@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="py_nemo_rebuild",
-    version="0.0.1",
+    version="0.8.0",
     author="Piergiuseppe Fogli",
     author_email="piergiuseppe.fogli@cmcc.it",
     description="Rebuild NEMO/XIOS multiple output/restart files in a single file.",

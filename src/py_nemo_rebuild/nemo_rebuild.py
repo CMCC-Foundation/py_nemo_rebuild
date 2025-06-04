@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
-
 import sys
 import os
 import re
@@ -33,19 +31,29 @@ import netCDF4 as nc
 
 # SemVer version
 _major_version = 0
-_minor_version = 6
+_minor_version = 8
 _patch = 0
 
 #_release = 'beta'
 _release = ''
 
-_date = '24-01-2025'
+_date = '04-06-2025'
 
 _version = '{:d}.{:d}'.format(_major_version, _minor_version)
 if (_patch>0):
     _version += '.{:d}'.format(_patch)
 if (len(_release)>0):
     _version += '-'+_release
+
+# Figure out if name is a global horizontal dimension name
+def isgdim(name):
+    if name in ('x', 'y', 'i', 'j', 'nav_lon', 'nav_lat'):
+        return True
+    elif ('lat' in name or 'lon' in name):
+        return True
+    else:
+        return False
+#
 
 def nemo_rebuild(in_file=None,
                  out_file=None,
@@ -210,9 +218,6 @@ def nemo_rebuild(in_file=None,
         ncfmt+='_CLASSIC'
     oncid = nc.Dataset(out_file, mode='w', format=ncfmt, parallel=parallel, comm=comm, info=info)
     #
-    if (verbose):
-        print(rank, 'oncid ', oncid, flush=True)
-    #
     ####################################################################
     #
     # Copy/update global attributes, except excluded ones
@@ -263,7 +268,7 @@ def nemo_rebuild(in_file=None,
             print(dim)
         if dim.isunlimited():
             oncid.createDimension(dim.name, None)
-        elif (dim.size in ldimszs):
+        elif (dim.size in ldimszs and isgdim(dim.name)):
             idx = 0 if ldimszs[0]==dim.size else 1
             oncid.createDimension(dim.name, gdimszs[idx])
             gdims[idx] = dim.name
@@ -309,6 +314,9 @@ def nemo_rebuild(in_file=None,
     incid.close()
     #
     del in_file0
+    #
+    if (verbose):
+        print(rank, 'oncid ', oncid, flush=True)
     #
     ####################################################################
     #
@@ -410,7 +418,8 @@ def nemo_rebuild(in_file=None,
                 raise RuntimeError('Error with index!')
             #
             #if (bnd):
-            #    print(rank, niter, 'POST', gi1,gi2,gj1,gj2,li1,li2,lj1,lj2, lnx, lny, flush=True)
+            #if (verbose):
+            #    print('IDXs: ', rank, niter, gi1,gi2,gj1,gj2,li1,li2,lj1,lj2, lnx, lny, flush=True)
             #
             ################################################################
             #
@@ -421,9 +430,8 @@ def nemo_rebuild(in_file=None,
                     print('\n', rank, niter, name, var, flush=True)
                 #
                 ovid = oncid.variables[name]
-                # Set collective I/O mode
                 if (parallel):
-                    ovid.set_collective(True)
+                    ovid.set_collective(True)   # Set collective I/O mode
                 #
                 # Variables to be rebuilt
                 if (gdims[0] in var.dimensions and gdims[1] in var.dimensions):
